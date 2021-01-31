@@ -1,0 +1,73 @@
+/*filename mythread_posix1.c：展示posix线程生成函数的方法
+*编译: $ gcc -o mythread_posix1 mythread_posix1.c -lpthread
+*使用方法： 指定一个累加次数作为参数值，如100000000: $ ./mythread_posix1 100000000
+*wirtten by Fang Sheng from SDUST, Oct.10 2014
+*tested under Ubuntu 14.04LTS
+*/
+
+#include <pthread.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <string.h>
+pthread_t thread;
+int counter=0;
+int upper;
+
+// 线程函数，功能是对counter数值进行累加；
+//线程函数可以完成更复杂的工作，这仅仅是一个示例
+void *my_thread()
+{
+	int	i, temp;
+	printf ("I'm thread 1\n");
+	for (i = 0; i < upper; i++) 
+	{
+		temp = counter;
+		temp += 1;
+		counter = temp;
+	}
+	printf("thread1 :Is Main function waiting for me ?\n");
+	pthread_exit(NULL);
+
+}
+
+void thread_create()
+{
+	int temp;
+	memset(&thread, 0, sizeof(thread)); 
+	/*create the new thread*/
+	if((temp = pthread_create(&thread, NULL, my_thread, NULL)) != 0) //创建线程
+		printf("Creating thread 1 has failed!\n");
+	else
+		printf("Thread 1 has been created! \n");	
+	
+}
+
+void thread_wait(void)
+{/*waiting for the thread finished*/	
+	if(thread !=0) 
+	{ 
+		pthread_join(thread,NULL);//等待线程退出
+		printf("Theread 1 has exited! \n");
+	}	
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc != 2) 
+	{
+		fprintf(stderr,"usage: mythrd-posix1 integer_value\n");			
+		return -1;
+	}
+	if (atoi(argv[1]) < 0) 
+	{
+		fprintf(stderr,"Argument %d must be non-negative\n",atoi(argv[1]));		
+		return -1;
+	}
+	upper = atoi(argv[1]);		
+	printf("I am main function, I am creating the threads! \n");
+	thread_create();
+	printf("I am main function , I am waiting the threads finished! \n");
+	thread_wait();
+	printf("counter = %d\n",counter);
+	return 0;
+}
